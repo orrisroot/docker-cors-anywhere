@@ -1,0 +1,11 @@
+{
+  "name": "docker-cors-anywhere",
+  "version": "0.4.4",
+  "license": "MIT",
+  "scripts": {
+    "start": "node node_modules/cors-anywhere/server.js"
+  },
+  "dependencies": {
+    "cors-anywhere": "^0.4.4"
+  }
+}
