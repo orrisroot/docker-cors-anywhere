@@ -11,4 +11,5 @@ docker image tag ${IMAGE_ID} ${IMAGE}:${VERSION}
 docker image tag ${IMAGE_ID} ${IMAGE}:${VERSION}-${NODE_VERSION}
 
 #docker login
-#docker image push --all-tags orrisroot/cors-anywhere
+echo Done! To push built images, run the following command.
+echo docker image push --all-tags ${IMAGE}
