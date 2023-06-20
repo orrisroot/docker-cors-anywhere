@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 
-FROM gcr.io/distroless/nodejs-debian11:18
+FROM gcr.io/distroless/nodejs18-debian11:latest
 WORKDIR /app
 COPY --from=build-env /app/node_modules /app/node_modules
 EXPOSE 8080

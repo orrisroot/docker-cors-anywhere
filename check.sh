@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_IMAGE="gcr.io/distroless/nodejs-debian11:18"
+BASE_IMAGE="gcr.io/distroless/nodejs18-debian11:latest"
 TARGET_IMAGE="docker.io/orrisroot/cors-anywhere:latest"
 
 REQUIRED_COMMANDS=("skopeo" "jq" "basename")
