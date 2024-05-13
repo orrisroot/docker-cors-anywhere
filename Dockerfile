@@ -1,9 +1,9 @@
-FROM docker.io/library/node:20-bullseye AS build-env
+FROM docker.io/library/node:22-bookworm AS build-env
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 
-FROM gcr.io/distroless/nodejs20-debian11:latest
+FROM gcr.io/distroless/nodejs22-debian12:latest
 WORKDIR /app
 COPY --from=build-env /app/node_modules /app/node_modules
 EXPOSE 8080
