@@ -1,6 +1,6 @@
 FROM docker.io/library/node:22-bookworm AS build-env
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm install
 
 FROM gcr.io/distroless/nodejs22-debian12:latest
