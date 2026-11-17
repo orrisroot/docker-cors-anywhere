@@ -1,15 +1,22 @@
 #!/bin/bash
 
+set -euo pipefail
+
 IMAGE=orrisroot/cors-anywhere
-REGISTORY=docker.io/${IMAGE}
-VERSION=0.4.4
+DIR=$(cd "$(dirname "$0")" && pwd)
+# Read the version from dependencies.cors-anywhere in package.json (updated by Renovate)
+VERSION=$(sed -n 's/^[[:space:]]*"cors-anywhere":[[:space:]]*"\([^"]*\)".*/\1/p' "${DIR}/package.json")
 
-docker build --pull --force-rm -t ${IMAGE}:latest .
-IMAGE_ID=$(docker image ls orrisroot/cors-anywhere:latest -q)
-NODE_VERSION=$(docker run --rm -it ${IMAGE}:latest --version | sed -e "s/^v//" -e "s/\r$//")
-docker image tag ${IMAGE_ID} ${IMAGE}:${VERSION}
-#docker image tag ${IMAGE_ID} ${IMAGE}:${VERSION}-${NODE_VERSION}
+if ! [[ "${VERSION}" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+    echo "Invalid cors-anywhere version in package.json: '${VERSION}'" 1>&2
+    exit 1
+fi
 
-#docker login
-echo Done! To push built images, run the following command.
-echo docker image push --all-tags ${IMAGE}
+if ! docker build --force-rm -t "${IMAGE}:latest" "${DIR}"; then
+    echo "Build error occured." 1>&2
+    exit 1
+fi
+docker image tag "${IMAGE}:latest" "${IMAGE}:${VERSION}"
+
+echo ""
+echo "Done! Built ${IMAGE}:latest and ${IMAGE}:${VERSION}."

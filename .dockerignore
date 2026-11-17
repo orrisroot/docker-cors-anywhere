@@ -1,5 +1,7 @@
 .git
+.github
 .gitignore
 build.sh
 README.md
+renovate.json
 node_modules

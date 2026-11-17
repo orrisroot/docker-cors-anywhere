@@ -1,0 +1,90 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":maintainLockFilesWeekly",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Asia/Tokyo",
+  "packageRules": [
+    {
+      "description": "Automerge base image digest updates once the PR build passes",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Pin cors-anywhere so image tags match the installed release",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepNames": [
+        "cors-anywhere"
+      ],
+      "rangeStrategy": "pin"
+    },
+    {
+      "description": "Automerge cors-anywhere patch updates (0.x minor and major updates require manual review)",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepNames": [
+        "cors-anywhere"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Bump http-proxy override on new releases",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepNames": [
+        "http-proxy"
+      ],
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "Automerge http-proxy minor/patch updates (major updates require manual review)",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepNames": [
+        "http-proxy"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Automerge npm lockfile maintenance updates (keeps transitive dependencies updated)",
+      "matchUpdateTypes": [
+        "lockFileMaintenance"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Automerge GitHub Actions updates",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pinDigest"
+      ],
+      "automerge": true
+    }
+  ]
+}

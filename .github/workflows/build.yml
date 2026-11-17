@@ -1,0 +1,103 @@
+name: Build and push
+
+# Updates of the base images and npm packages are detected by Renovate (see renovate.json).
+# Renovate opens a PR updating Dockerfile, package.json, or package-lock.json
+# -> the PR is build-checked and smoke-tested -> merged into main -> pushed.
+on:
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - package.json
+      - package-lock.json
+      - .github/workflows/build.yml
+  # Run on every PR (no paths filter) so that the required "build" check is always reported
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE: docker.io/orrisroot/cors-anywhere
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read cors-anywhere version from package.json
+        id: version
+        run: |
+          version=$(jq -r '.dependencies["cors-anywhere"]' package.json)
+          if ! [[ "$version" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+            echo "::error::Invalid cors-anywhere version in package.json: '$version'"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          no-cache: true
+          load: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+
+      - name: Smoke test
+        env:
+          TEST_IMAGE: ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/www"
+          printf 'smoke-test-ok' > "$RUNNER_TEMP/www/test.txt"
+          python3 -m http.server 18080 --bind 127.0.0.1 -d "$RUNNER_TEMP/www" >/dev/null 2>&1 &
+          server_pid=$!
+          trap 'docker rm -f smoke-test >/dev/null 2>&1 || true; kill "$server_pid" >/dev/null 2>&1 || true' EXIT
+
+          docker run -d --name smoke-test --network host "$TEST_IMAGE"
+
+          url=http://127.0.0.1:8080/http://127.0.0.1:18080/test.txt
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:18080/test.txt >/dev/null \
+              && curl -sf http://127.0.0.1:8080/ >/dev/null; then
+              if curl -sS -D "$RUNNER_TEMP/headers.txt" -H 'Origin: http://example.org' "$url" -o "$RUNNER_TEMP/body.txt" \
+                && grep -qi '^HTTP/.* 200' "$RUNNER_TEMP/headers.txt" \
+                && grep -qi '^access-control-allow-origin: \*' "$RUNNER_TEMP/headers.txt" \
+                && [ "$(cat "$RUNNER_TEMP/body.txt")" = "smoke-test-ok" ]; then
+                echo "Smoke test passed"
+                cat "$RUNNER_TEMP/headers.txt"
+                exit 0
+              fi
+              break
+            fi
+            sleep 1
+          done
+          echo "::error::Smoke test failed"
+          cat "$RUNNER_TEMP/headers.txt" 2>/dev/null || true
+          cat "$RUNNER_TEMP/body.txt" 2>/dev/null || true
+          docker logs smoke-test || true
+          exit 1
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push
+        if: github.event_name != 'pull_request'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker image push "$IMAGE:$VERSION"
+          docker image push "$IMAGE:latest"

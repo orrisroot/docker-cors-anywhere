@@ -1,12 +1,12 @@
 {
   "name": "docker-cors-anywhere",
-  "version": "0.4.4",
+  "private": true,
   "license": "MIT",
   "scripts": {
     "start": "node node_modules/cors-anywhere/server.js"
   },
   "dependencies": {
-    "cors-anywhere": "^0.4.4"
+    "cors-anywhere": "0.4.4"
   },
   "overrides": {
     "http-proxy": "^1.18.1"
