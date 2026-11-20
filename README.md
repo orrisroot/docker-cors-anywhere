@@ -3,7 +3,7 @@
 This image provides [cors-anywhere](https://www.npmjs.com/package/cors-anywhere) service.
 
 - Docker Hub: [`orrisroot/cors-anywhere`](https://hub.docker.com/r/orrisroot/cors-anywhere)
-- Base image: `gcr.io/distroless/nodejs24-debian13`
+- Base image: `gcr.io/distroless/nodejs26-debian13`
 - Platform: `linux/amd64`
 
 ## Tags
