@@ -1,4 +1,4 @@
-FROM docker.io/library/node:24-trixie@sha256:6e5d4c38403930b420404f190be8563396dca2bd156a6cb4722707b0efcf6fc1 AS build-env
+FROM docker.io/library/node:26-trixie@sha256:e18c3ccdf7d71619990b0e85639f506e2028a95410999cab24cc373cbd10e0ac AS build-env
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev \
