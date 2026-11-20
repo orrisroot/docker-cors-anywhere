@@ -31,6 +31,20 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - name: Check Node.js major versions match
+        run: |
+          node_major=$(sed -nE 's|^FROM docker\.io/library/node:([0-9]+)-.*|\1|p' Dockerfile)
+          runtime_major=$(sed -nE 's|^FROM gcr\.io/distroless/nodejs([0-9]+)-.*|\1|p' Dockerfile)
+          if [[ -z "$node_major" || -z "$runtime_major" ]]; then
+            echo "::error::Could not determine Node.js major versions from Dockerfile"
+            exit 1
+          fi
+          if [[ "$node_major" != "$runtime_major" ]]; then
+            echo "::error::Node.js major version mismatch: build=$node_major runtime=$runtime_major"
+            exit 1
+          fi
+          echo "Node.js major version: $node_major"
+
       - name: Read cors-anywhere version from package.json
         id: version
         run: |
