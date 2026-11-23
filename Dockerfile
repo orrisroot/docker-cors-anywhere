@@ -6,7 +6,7 @@ RUN npm ci --omit=dev \
     && test ! -d node_modules/cors-anywhere/node_modules/http-proxy \
     && node -e "const pkg = require('./package.json'); const ca = require('./node_modules/cors-anywhere/package.json'); if (ca.version !== pkg.dependencies['cors-anywhere']) throw new Error('cors-anywhere version mismatch: ' + ca.version);"
 
-FROM gcr.io/distroless/nodejs26-debian13:latest@sha256:80631bd2f0e7ef192138a7409013b47d92fd11b8ff3bb35f5c0a65be3ecaea4c
+FROM gcr.io/distroless/nodejs26-debian13:latest@sha256:b462e87a3db156aea160dd8a5306b85d02c3061ca0e3194fe0af81282a830ab0
 WORKDIR /app
 COPY --from=build-env /app/node_modules /app/node_modules
 EXPOSE 8080
